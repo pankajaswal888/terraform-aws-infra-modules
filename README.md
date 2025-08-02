@@ -21,6 +21,8 @@ AWS account with proper permissions
 
 AWS CLI configured
 
+*Architecture Diagram*
+
 <img width="660" height="458" alt="image" src="https://github.com/user-attachments/assets/240b28d8-e736-43d6-8f22-089c4fe4c1f4" />
 
 Security
