@@ -50,21 +50,60 @@ resource "aws_instance" "web" {
   }
 }
 
-# S3 Bucket with Encryption
-resource "aws_s3_bucket" "data" {
-  bucket = "${var.prefix}-data-bucket"
-  acl    = "private"
+# Security Group Resource
+resource "aws_security_group" "ec2" {
+  name        = "${var.prefix}-ec2-sg"
+  description = "Security group for EC2 instances"
+  vpc_id      = aws_vpc.main.id
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
-    }
+  ingress {
+    description = "SSH access"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Restrict this in production!
+  }
+
+  ingress {
+    description = "HTTP access"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Restrict this in production!
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
+    Name = "${var.prefix}-ec2-sg"
+  }
+}
+
+# S3 Bucket with Encryption
+resource "aws_s3_bucket" "data" {
+  bucket = "${var.prefix}-data-bucket"
+  tags = {
     Name = "${var.prefix}-data-bucket"
+  }
+}
+
+resource "aws_s3_bucket_acl" "data" {
+  bucket = aws_s3_bucket.data.id
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "data" {
+  bucket = aws_s3_bucket.data.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
   }
 }
 
